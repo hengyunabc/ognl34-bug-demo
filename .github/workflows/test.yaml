@@ -1,0 +1,56 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [master]
+  # schedule:
+  # - cron: "31 4 * * 4"
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["java"]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
+        # Learn more:
+        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. 初始化 CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+
+      # 2. 【关键】显式配置 JDK 8
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: "8"
+          distribution: "temurin" # 推荐使用 temurin, zulu 或 adopt
+          cache: "maven"
+
+      # 3. 【关键】手动执行 Maven 构建 (替换掉原来的 autobuild)
+      # 这里使用了你日志中原本想运行的命令，但去掉了强制的 17 版本参数
+      # 为了加快分析速度，通常建议跳过测试 (-DskipTests)
+      - name: Build with Maven
+        run: |
+          ./mvnw clean package -f pom.xml -B -V -e \
+          -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Dspotbugs.skip -Denforcer.skip \
+          -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true -Dspotless.check.skip=true
+
+      # 注意：如果原本有 - name: Autobuild ... 这一步，请直接删除或注释掉
+
+      # 4. 执行分析
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
