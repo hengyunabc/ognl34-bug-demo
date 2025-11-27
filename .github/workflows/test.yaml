@@ -45,12 +45,8 @@ jobs:
       # 为了加快分析速度，通常建议跳过测试 (-DskipTests)
       - name: Build with Maven
         run: |
-          ./mvnw clean package -f pom.xml -B -V -e \
-          -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Dspotbugs.skip -Denforcer.skip \
-          -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true -Dspotless.check.skip=true
-
+          ./mvnw clean package -f pom.xml -B -V -e -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Dspotbugs.skip -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true -Dspotless.check.skip=true
       # 注意：如果原本有 - name: Autobuild ... 这一步，请直接删除或注释掉
-
       # 4. 执行分析
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
